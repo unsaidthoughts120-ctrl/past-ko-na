@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Anonymous Message</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #1e1b4b, #312e81, #4f46e5);
+      background-size: 400% 400%;
+      animation: gradient 10s ease infinite;
+    }
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-6 text-white">
+  <div class="max-w-lg w-full bg-white/10 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-white/10">
+    <h1 class="text-2xl font-bold mb-2 text-center">💌 Anonymous Message</h1>
+    <p class="text-center text-sm text-white/70 mb-4">
+      Send a message anonymously — your identity is never saved.
+    </p>
+
+    <form id="anonForm" class="space-y-4">
+      <textarea id="message" rows="5" required maxlength="2000"
+        placeholder="Type your anonymous message..."
+        class="w-full p-3 bg-white/5 rounded-lg border border-white/10 focus:outline-none"></textarea>
+
+      <input id="nick" maxlength="50" placeholder="Optional nickname"
+        class="w-full p-2 bg-white/5 rounded-lg border border-white/10 focus:outline-none" />
+
+      <button type="submit"
+        class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-semibold">Send</button>
+
+      <div id="status" class="text-center text-sm mt-2 text-white/80"></div>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('anonForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const status = document.getElementById('status');
+      status.textContent = 'Sending...';
+      const msg = document.getElementById('message').value.trim();
+      const nick = document.getElementById('nick').value.trim();
+
+      try {
+        const res = await fetch('/api/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: msg, nick })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          status.textContent = '✅ Message sent!';
+          document.getElementById('anonForm').reset();
+        } else {
+          status.textContent = '❌ ' + (data.error || 'Error sending.');
+        }
+      } catch (err) {
+        console.error(err);
+        status.textContent = '⚠️ Network error. Try again.';
+      }
+    });
+  </script>
+</body>
+</html>
+
